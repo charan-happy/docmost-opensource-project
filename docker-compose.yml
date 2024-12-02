@@ -6,11 +6,12 @@ services:
     depends_on:
       - db
       - redis
-    environment:
-      APP_URL: 'https://www.nagacharan.site'
-      APP_SECRET: '8e4a8a5cc2c2d08c0db24829abbd2266fdd7d0589c2b2266aa44ed7190e14255'
-      DATABASE_URL: 'postgresql://postgres:H5546WneQp6b6W4d3BdI2HGA@db:5432/docmost?schema=public'
-      REDIS_URL: 'redis://redis:6379'
+    env_file:
+      - .env
+      #APP_URL: 'https://www.nagacharan.site'
+      #APP_SECRET: '8e4a8a5cc2c2d08c0db24829abbd2266fdd7d0589c2b2266aa44ed7190e14255'
+      #DATABASE_URL: 'postgresql://postgres:H5546WneQp6b6W4d3BdI2HGA@db:5432/docmost?schema=public'
+      #REDIS_URL: 'redis://redis:6379'
     ports:
       - "3000:3000"
     restart: unless-stopped
