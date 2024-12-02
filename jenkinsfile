@@ -1,0 +1,67 @@
+pipeline{
+    agent any
+    tools{
+        jdk 'jdk17'
+        nodejs 'node18'
+    }
+    environment {
+        SCANNER_HOME=tool 'sonar-scanner'
+    }
+    stages {
+        stage('Checkout from Git'){
+            steps{
+                git branch: 'main', url: 'https://github.com/charan-happy/docmost-opensource-project.git'
+            }
+        }
+        stage('Prepare Environment') {
+        	steps {
+            	withCredentials([file(credentialsId: 'env-file-id', variable: 'ENV_FILE')]) {
+                	script {
+                    	sh "mv \$ENV_FILE .env"
+                	}
+            	}
+        	}
+    	}
+        stage('Install Dependencies') {
+            steps {
+                sh "npm install -g pnpm"
+                sh "pnpm install --frozen-lockfile"
+            }
+        }
+        stage("Sonarqube Analysis "){
+            steps{
+                withSonarQubeEnv('sonar-server') {
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Docmost \
+                    -Dsonar.projectKey=Docmost '''
+                }
+            }
+        }
+        stage("quality gate"){
+           steps {
+                script {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'Sonar-token'
+                }
+            }
+        }
+        stage('TRIVY FS SCAN') {
+            steps {
+                sh "trivy fs . > trivyfs.json"
+            }
+        }
+        stage("TRIVY Image scan"){
+            steps{
+                sh "trivy image docmost/docmost:latest > trivy.json"
+            }
+        }
+        stage ("Create docker Network") {
+            steps{
+                sh "docker network create web"
+             }
+        }
+        stage('Deploy'){
+            steps{
+                sh 'docker compose -f docker-compose.yml up -d'
+            }
+        }
+    }
+}
