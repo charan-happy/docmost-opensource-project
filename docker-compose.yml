@@ -19,7 +19,7 @@ services:
       - docmost:/app/data/storage
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.docmost.rule=Host('nagacharan.site')'
+      - 'traefik.http.routers.docmost.rule=Host(nagacharan.site)'
       - 'traefik.http.services.docmost.loadbalancer.server.port=3000'
       - 'traefik.http.routers.docmost.entrypoints=websecure'
       - 'traefik.http.routers.docmost.tls.certresolver=myresolver'
@@ -71,4 +71,3 @@ services:
 networks:
   web:
     external: true
-
